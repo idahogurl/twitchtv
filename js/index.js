@@ -1,5 +1,5 @@
 /// <reference path="typings/react.d.ts" /> 
-/// <reference path="typings/react.dom.d.ts" />
+/// <reference path="typings/react.dom.d.ts" /> 
 /// <reference path="typings/jquery.d.ts" />
 "use strict";
 var __extends = (this && this.__extends) || function (d, b) {
@@ -19,14 +19,28 @@ var channelNames = [
     "brunofin",
     "comster404"
 ];
-var React = require('react');
-var ReactDOM = require('react-dom');
+
+var Channel = (function () {
+    function Channel(name, status, nowStreaming, logo) {
+        this.name = name;
+        this.status = status;
+        this.nowStreaming = nowStreaming;
+        this.logo = logo;
+        this.name = name;
+        this.status = status;
+        this.nowStreaming = nowStreaming;
+        this.logo = logo;
+    }
+    return Channel;
+}());
 var ChannelList = (function (_super) {
     __extends(ChannelList, _super);
     function ChannelList() {
         _super.call(this);
         var channels = [];
-        this.state = { channels: channels };
+        this.state = {
+            channels: channels
+        };
         this.fetch();
     }
     ChannelList.prototype.fetch = function () {
@@ -53,24 +67,43 @@ var ChannelList = (function (_super) {
         });
     };
     ChannelList.prototype.render = function () {
-        var results = this.state["channels"].map(function (channel) {
-            return (React.createElement("li", null, React.createElement("div", null, React.createElement("img", {src: channel.logo, className: "img-thumbnail"}), " ", channel.name)));
+        var results = this
+            .state["channels"]
+            .map(function (channel) {
+            return (React.createElement("li", null, React.createElement(ChannelLogo, {src: channel.logo}), channel.name, React.createElement(ChannelStatus, {value: channel.status})));
         });
         return (React.createElement("div", null, React.createElement("ul", null, results)));
     };
     return ChannelList;
 }(React.Component));
-var Channel = (function () {
-    function Channel(name, status, nowStreaming, logo) {
-        this.name = name;
-        this.status = status;
-        this.nowStreaming = nowStreaming;
-        this.logo = logo;
-        this.name = name;
-        this.status = status;
-        this.nowStreaming = nowStreaming;
-        this.logo = logo;
+var ChannelStatus = (function (_super) {
+    __extends(ChannelStatus, _super);
+    function ChannelStatus(props) {
+        _super.call(this);
     }
-    return Channel;
-}());
-ReactDOM.render(React.createElement(ChannelList, null), document.getElementsByTagName("body")[0]);
+    ChannelStatus.prototype.render = function () {
+        if (this.props["value"] == "offline") {
+            return (React.createElement("i", {className: "fa fa-check-circle fa-2x"}));
+        }
+        else {
+            return (React.createElement("i", {className: "fa fa-exclamation-circle fa-2x"}));
+        }
+    };
+    return ChannelStatus;
+}(React.Component));
+var ChannelLogo = (function (_super) {
+    __extends(ChannelLogo, _super);
+    function ChannelLogo(props) {
+        _super.call(this);
+    }
+    ChannelLogo.prototype.render = function () {
+        if (this.props["src"] == null) {
+            return (React.createElement("span", {className: "img-thumbnail text-center"}, React.createElement("i", {className: "fa fa-picture-o fa-2x", id: "thumbnail"})));
+        }
+        else {
+            return (React.createElement("img", {src: this.props["src"], className: "img-thumbnail"}));
+        }
+    };
+    return ChannelLogo;
+}(React.Component));
+ReactDOM.render(React.createElement(ChannelList, null), document.getElementById("channelList"));

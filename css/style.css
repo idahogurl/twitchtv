@@ -31,5 +31,28 @@ li:nth-child(odd) {
 
 ul {
   list-style-type: none;
+  width: 400px;
 }
 
+.img-thumbnail {
+  width: 100px;
+  height: 100px;
+  color: silver;
+}
+
+#twitch-logo {
+  width: 10%;
+  margin-bottom: 10px;
+}
+
+#thumbnail {
+  padding: 10px;
+}
+
+.fa-exclamation-circle {
+  color: orangered;
+}
+
+.fa-check-circle {
+  color: limegreen;
+}

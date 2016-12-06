@@ -8,30 +8,27 @@
 
 body {
   margin: 20px;
+  font-family: Open Sans;
 }
 
 #random {
   margin-top: 20px;
 }
 
-li {
+.row {
   border-width: 0 1px 1px 1px;
   border-color:  silver;
   border-style: solid;
   padding: 10px;
+  width: 500px;
 }
 
-li:first-child {
+.row:first-child {
   border-top-width: 1px;
 }
 
-li:nth-child(odd) {
+.row:nth-child(odd) {
   background-color: #eee;
-}
-
-ul {
-  list-style-type: none;
-  width: 400px;
 }
 
 .img-thumbnail {
@@ -55,4 +52,13 @@ ul {
 
 .fa-check-circle {
   color: limegreen;
+}
+
+a, a:hover {
+  color: rebeccapurple;
+  font-size: 14pt;
+}
+
+#nowStreaming {  
+  font-size: 10pt;
 }

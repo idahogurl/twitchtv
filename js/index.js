@@ -19,13 +19,13 @@ var channelNames = [
     "brunofin",
     "comster404"
 ];
-
 var Channel = (function () {
-    function Channel(name, status, nowStreaming, logo) {
+    function Channel(name, status, nowStreaming, logo, link) {
         this.name = name;
         this.status = status;
         this.nowStreaming = nowStreaming;
         this.logo = logo;
+        this.link = link;
         this.name = name;
         this.status = status;
         this.nowStreaming = nowStreaming;
@@ -37,42 +37,51 @@ var ChannelList = (function (_super) {
     __extends(ChannelList, _super);
     function ChannelList() {
         _super.call(this);
-        var channels = [];
+        this.requestUrl = "https://wind-bow.gomix.me/twitch-api/";
+        this.channels = [];
         this.state = {
-            channels: channels
+            channels: this.channels
         };
-        this.fetch();
+        this.updateStatus = this.updateStatus.bind(this);
+        this.getChannels();
     }
-    ChannelList.prototype.fetch = function () {
-        var requestUrl = "https://wind-bow.gomix.me/twitch-api/streams/";
+    ChannelList.prototype.getChannels = function () {
         var that = this;
-        var channels = [];
         channelNames.map(function (channelName) {
-            $
-                .getJSON(requestUrl + channelName + "?callback=?", function (data) {
-                if (data.stream == null) {
-                    if (data.error == null) {
-                        channels.push(new Channel(channelName, "offline", null, null));
-                    }
-                    else {
-                        channels.push(new Channel(channelName, "no-user", null, null));
-                    }
-                    that.setState({ channels: channels });
+            $.getJSON(that.requestUrl + "channels/" + channelName + "?callback=?", function (data) {
+                debugger;
+                var channel = new Channel(channelName, status, data.status, data.logo, data.url);
+                if (data.error == null) {
+                    that.updateStatus(channel);
                 }
                 else {
-                    channels.push(new Channel(channelName, "online", data.stream.game, data.stream.channel.logo));
-                    that.setState({ channels: channels });
+                    that.channels.push(new Channel(channelName, "no-user", null, null, null));
+                    that.setState({ channels: that.channels });
                 }
             });
+        });
+    };
+    ChannelList.prototype.updateStatus = function (channel) {
+        var that = this;
+        $.getJSON(this.requestUrl + "streams/" + channel.name + "?callback=?", function (data) {
+            if (data.stream == null) {
+                channel.status = "offline";
+                channel.nowStreaming = null;
+            }
+            else {
+                channel.status = "online";
+            }
+            that.channels.push(channel);
+            that.setState({ channels: that.channels });
         });
     };
     ChannelList.prototype.render = function () {
         var results = this
             .state["channels"]
             .map(function (channel) {
-            return (React.createElement("li", null, React.createElement(ChannelLogo, {src: channel.logo}), channel.name, React.createElement(ChannelStatus, {value: channel.status})));
+            return (React.createElement("div", {className: "row"}, React.createElement("div", {className: "col-md-3"}, React.createElement(ChannelLogo, {src: channel.logo})), React.createElement("div", {className: "col-md-7"}, React.createElement("div", null, React.createElement("a", {href: channel.link}, channel.name)), React.createElement("div", {id: "nowStreaming"}, channel.nowStreaming)), React.createElement("div", {className: "col-md-1"}, React.createElement(ChannelStatus, {value: channel.status}))));
         });
-        return (React.createElement("div", null, React.createElement("ul", null, results)));
+        return (React.createElement("div", null, results));
     };
     return ChannelList;
 }(React.Component));
@@ -83,10 +92,13 @@ var ChannelStatus = (function (_super) {
     }
     ChannelStatus.prototype.render = function () {
         if (this.props["value"] == "offline") {
-            return (React.createElement("i", {className: "fa fa-check-circle fa-2x"}));
+            return (React.createElement("i", {className: "fa fa-exclamation-circle fa-2x"}));
+        }
+        else if (this.props["value"] == "no-user") {
+            return (React.createElement("i", {className: "fa fa-user-times fa-2x"}));
         }
         else {
-            return (React.createElement("i", {className: "fa fa-exclamation-circle fa-2x"}));
+            return (React.createElement("i", {className: "fa fa-check-circle fa-2x"}));
         }
     };
     return ChannelStatus;

@@ -19,7 +19,8 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 class Channel {
-  constructor(public name : string, public status : string, public nowStreaming : string, public logo : string) {
+  constructor(public name : string, public status : string, 
+  public nowStreaming : string, public logo : string, public link : string) {
     this.name = name;
     this.status = status;
     this.nowStreaming = nowStreaming;
@@ -28,38 +29,52 @@ class Channel {
 }
 class ChannelList extends React.Component < any,
 any > {
+  requestUrl : string;
+  channels : Channel[]
+  
   constructor() {
     super();
-    var channels : Channel[] = [];
+    this.requestUrl = "https://wind-bow.gomix.me/twitch-api/";
+
+    this.channels= [];
     this.state = {
-      channels: channels
+      channels: this.channels
     };
 
-    this.fetch();
+    this.updateStatus = this.updateStatus.bind(this);   
+
+    this.getChannels();     
   }
 
-  fetch() {
-    var requestUrl = "https://wind-bow.gomix.me/twitch-api/streams/";
+  getChannels() {    
     var that = this;
-    var channels : Channel[] = [];
-
+    
     channelNames.map(function (channelName) {
-      $
-        .getJSON(requestUrl + channelName + "?callback=?", function (data) {
-
-          if (data.stream == null) {
+      $.getJSON(that.requestUrl + "channels/" + channelName + "?callback=?", function (data) {
+          debugger;
+            let channel = new Channel(channelName, status, data.status, data.logo, data.url);
             if (data.error == null) {
-              channels.push(new Channel(channelName, "offline", null, null));
+              that.updateStatus(channel);            
             } else {
-              channels.push(new Channel(channelName, "no-user", null, null));
+              that.channels.push(new Channel(channelName, "no-user", null, null, null));
+              that.setState({channels: that.channels});
             }
-            that.setState({channels: channels});
-          } else {
-            channels.push(new Channel(channelName, "online", data.stream.game, data.stream.channel.logo));
-            that.setState({channels: channels});
-          }
         });
     });
+  }
+
+  updateStatus(channel : Channel) {
+      var that = this;
+      $.getJSON(this.requestUrl + "streams/" + channel.name + "?callback=?", function (data) {
+          if (data.stream == null) {
+             channel.status = "offline";
+             channel.nowStreaming = null;
+          } else {
+            channel.status = "online";
+          }
+          that.channels.push(channel);
+          that.setState({channels: that.channels});
+      });
   }
 
   render() {
@@ -67,20 +82,24 @@ any > {
       .state["channels"]
       .map(function (channel : Channel) {
          return (
-            <li>
+           <div className="row">
+            <div className="col-md-3">
               <ChannelLogo src={channel.logo} />
-              {channel.name} 
-              
+            </div>
+            <div className="col-md-7">
+              <div><a href={channel.link}>{channel.name}</a></div>
+              <div id="nowStreaming">{channel.nowStreaming}</div> 
+            </div>
+            <div className="col-md-1">
               <ChannelStatus value={channel.status} />
-            </li>
+            </div>
+            </div>
           );        
       });
 
     return (
-      <div>
-        <ul>
-          {results}
-        </ul>
+      <div>        
+          {results}        
       </div>
     );
   }
@@ -93,9 +112,11 @@ class ChannelStatus extends React.Component<any,any> {
 
   render() {
    if (this.props["value"] == "offline") {
+      return (<i className="fa fa-exclamation-circle fa-2x"></i>);      
+   } else if (this.props["value"] == "no-user") {
+     return (<i className="fa fa-user-times fa-2x"></i>);
+   } else {
       return (<i className="fa fa-check-circle fa-2x"></i>);
-    } else {
-      return (<i className="fa fa-exclamation-circle fa-2x"></i>);
     }
   }
 }
